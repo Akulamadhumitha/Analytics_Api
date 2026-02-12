@@ -45,12 +45,12 @@ Create a .env file (or copy from .env.example):
 cp .env.example .env
 Example .env:
 
-PORT=3000
-API_KEY=your-secret-api-key
-REDIS_HOST=redis
-REDIS_PORT=6379
-RATE_LIMIT_WINDOW=60
-RATE_LIMIT_MAX=10
+PORT=8080
+API_KEY=your_super_secret_api_key_123
+REDIS_URL=redis://localhost:6379
+CACHE_TTL_SECONDS=300
+RATE_LIMIT_REQUESTS=5
+RATE_LIMIT_WINDOW_SECONDS=30
 ```
 ## 3️⃣ Build Docker Containers
 ```bash
@@ -247,26 +247,27 @@ The application runs in a multi-container setup:
 ## 📦 Optimized Multi-Stage Dockerfile
 
 ```dockerfile
-# Stage 1: Builder
-FROM node:20-alpine AS builder
+# Use official Node image
+FROM node:18-alpine
 
+# Create app directory
 WORKDIR /app
 
+# Copy package files first
 COPY package*.json ./
-RUN npm install --production
 
+# Install dependencies
+RUN npm install
+
+# Copy source code
 COPY . .
 
-# Stage 2: Runtime
-FROM node:20-alpine
+# Expose port
+EXPOSE 8080
 
-WORKDIR /app
+# Start application
+CMD ["npm", "start"]
 
-COPY --from=builder /app /app
-
-EXPOSE 3000
-
-CMD ["node", "src/app.js"]
 ```
 Benefits:
 
